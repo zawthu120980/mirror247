@@ -45,13 +45,14 @@ def stats(update, context):
     mem_t = get_readable_file_size(memory.total)
     mem_a = get_readable_file_size(memory.available)
     mem_u = get_readable_file_size(memory.used)
-    stats = f'<b>Commit Date:</b> {last_commit}\n\n'\
-            f'<b>Bot Uptime:</b> {currentTime}\n'\
-            f'<b>OS Uptime:</b> {osUptime}\n\n'\
+    stats = f'<b>❖ 𝟐𝟒/𝟕 𝐌𝐢𝐫𝐫𝐨𝐫 𝐁𝐨𝐭 ❖</b>\n\n'\ 
+            f'<b>Last Changes Date:</b> {last_commit}\n\n'\
+            f'<b>Turned On Since:</b> {currentTime}\n'\
+            f'<b>OS Turned on Since:</b> {osUptime}\n\n'\
             f'<b>Total Disk Space:</b> {total}\n'\
             f'<b>Used:</b> {used} | <b>Free:</b> {free}\n\n'\
-            f'<b>Upload:</b> {sent}\n'\
-            f'<b>Download:</b> {recv}\n\n'\
+            f'<b>Upload Speed ⚡:</b> {sent}\n'\
+            f'<b>Download Speed ⚡:</b> {recv}\n\n'\
             f'<b>CPU:</b> {cpuUsage}%\n'\
             f'<b>RAM:</b> {mem_p}%\n'\
             f'<b>DISK:</b> {disk}%\n\n'\
@@ -249,13 +250,13 @@ def main():
     if ospath.isfile(".restartmsg"):
         with open(".restartmsg") as f:
             chat_id, msg_id = map(int, f)
-        bot.edit_message_text("Restarted successfully!", chat_id, msg_id)
+        bot.edit_message_text("Restarted successfully! 😎", chat_id, msg_id)
         osremove(".restartmsg")
     elif AUTHORIZED_CHATS:
         try:
             for i in AUTHORIZED_CHATS:
                 if str(i).startswith('-'):
-                    bot.sendMessage(chat_id=i, text="<b>Bot Started!</b>", parse_mode=ParseMode.HTML)
+                    bot.sendMessage(chat_id=i, text="<b>Am Ready, Send Mirror Links,😎</b>", parse_mode=ParseMode.HTML)
         except Exception as e:
             LOGGER.error(e)
 
