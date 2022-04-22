@@ -1,15 +1,14 @@
-import signal
-
+from signal import signal, SIGINT
 from os import path as ospath, remove as osremove, execl as osexecl
 from subprocess import run as srun, check_output
-from psutil import disk_usage, cpu_percent, swap_memory, cpu_count, virtual_memory, net_io_counters, boot_time, Process as psprocess
+from psutil import disk_usage, cpu_percent, swap_memory, cpu_count, virtual_memory, net_io_counters, boot_time
 from time import time
 from pyrogram import idle
 from sys import executable
 from telegram import ParseMode, InlineKeyboardMarkup
 from telegram.ext import CommandHandler
 
-from bot import bot, app, dispatcher, updater, botStartTime, IGNORE_PENDING_REQUESTS, alive, web, AUTHORIZED_CHATS, LOGGER, Interval, rss_session
+from bot import bot, app, dispatcher, updater, botStartTime, IGNORE_PENDING_REQUESTS, alive, AUTHORIZED_CHATS, LOGGER, Interval, rss_session
 from .helper.ext_utils.fs_utils import start_cleanup, clean_all, exit_clean_up
 from .helper.telegram_helper.bot_commands import BotCommands
 from .helper.telegram_helper.message_utils import sendMessage, sendMarkup, editMessage, sendLogFile
@@ -39,16 +38,15 @@ def stats(update, context):
     swap = swap_memory()
     swap_p = swap.percent
     swap_t = get_readable_file_size(swap.total)
-    swap_u = get_readable_file_size(swap.used)
     memory = virtual_memory()
     mem_p = memory.percent
     mem_t = get_readable_file_size(memory.total)
     mem_a = get_readable_file_size(memory.available)
     mem_u = get_readable_file_size(memory.used)
-    stats = f'<b>❖ 𝟐𝟒/𝟕 𝐌𝐢𝐫𝐫𝐨𝐫 𝐁𝐨𝐭 ❖</b>\n\n'\ 
-            f'<b>Last Changes Date:</b> {last_commit}\n\n'\
-            f'<b>Turned On Since:</b> {currentTime}\n'\
-            f'<b>OS Turned on Since:</b> {osUptime}\n\n'\
+    stats = f'<b>❖ 𝟮𝟰/𝟳 𝗠𝗶𝗿𝗿𝗼𝗿 𝗕𝗼𝘁 ❖</b>\n\n'\
+            f'<b>Last Changes:</b> {last_commit}\n\n'\
+            f'<b>Bot Started Since:</b> {currentTime}\n'\
+            f'<b>OS Startup Since:</b> {osUptime}\n\n'\
             f'<b>Total Disk Space:</b> {total}\n'\
             f'<b>Used:</b> {used} | <b>Free:</b> {free}\n\n'\
             f'<b>Upload Speed ⚡:</b> {sent}\n'\
@@ -68,7 +66,7 @@ def stats(update, context):
 def start(update, context):
     buttons = ButtonMaker()
     buttons.buildbutton("Group", "https://t.me/+1ivP1aO-bRo0Yzg1")
-    buttons.buildbutton("Channel", "https://t.me/mirror_247_chennel")
+    buttons.buildbutton("Report Group", "https://t.me/mirror_247_chennel")
     reply_markup = InlineKeyboardMarkup(buttons.build_menu(2))
     if CustomFilters.authorized_user(update) or CustomFilters.authorized_chat(update):
         start_string = f'''
@@ -77,17 +75,14 @@ Type /{BotCommands.HelpCommand} to get a list of available commands
 '''
         sendMarkup(start_string, context.bot, update.message, reply_markup)
     else:
-        sendMarkup('Not Authorized user, Join Us 👇 ', context.bot, update.message, reply_markup)
+        sendMarkup('Why you knock me? If you want to mirror files join below 👇', context.bot, update.message, reply_markup)
 
 def restart(update, context):
     restart_message = sendMessage("Restarting...", context.bot, update.message)
     if Interval:
         Interval[0].cancel()
     alive.kill()
-    procs = psprocess(web.pid)
-    for proc in procs.children(recursive=True):
-        proc.kill()
-    procs.kill()
+    srun(["pkill", "-f", "gunicorn"])
     clean_all()
     srun(["pkill", "-f", "aria2c"])
     srun(["python3", "update.py"])
@@ -101,7 +96,7 @@ def ping(update, context):
     start_time = int(round(time() * 1000))
     reply = sendMessage("Starting Ping", context.bot, update.message)
     end_time = int(round(time() * 1000))
-    editMessage(f'{end_time - start_time} ms', reply)
+    editMessage(f'Ping {end_time - start_time} ms', reply)
 
 
 def log(update, context):
@@ -250,13 +245,13 @@ def main():
     if ospath.isfile(".restartmsg"):
         with open(".restartmsg") as f:
             chat_id, msg_id = map(int, f)
-        bot.edit_message_text("Restarted successfully! 😎", chat_id, msg_id)
+        bot.edit_message_text("Restarted successfully!", chat_id, msg_id)
         osremove(".restartmsg")
     elif AUTHORIZED_CHATS:
         try:
             for i in AUTHORIZED_CHATS:
                 if str(i).startswith('-'):
-                    bot.sendMessage(chat_id=i, text="<b>Am Ready, Send Mirror Links,😎</b>", parse_mode=ParseMode.HTML)
+                    bot.sendMessage(chat_id=i, text="<b>What's up, Mango Peoples? </b>", parse_mode=ParseMode.HTML)
         except Exception as e:
             LOGGER.error(e)
 
@@ -277,8 +272,8 @@ def main():
     dispatcher.add_handler(stats_handler)
     dispatcher.add_handler(log_handler)
     updater.start_polling(drop_pending_updates=IGNORE_PENDING_REQUESTS)
-    LOGGER.info("Bot Started!")
-    signal.signal(signal.SIGINT, exit_clean_up)
+    LOGGER.info("What's up, Mango Peoples? ")
+    signal(SIGINT, exit_clean_up)
     if rss_session is not None:
         rss_session.start()
 
