@@ -39,7 +39,7 @@ def _clone(message, bot, multi=0):
     is_gdtot = is_gdtot_link(link)
     if is_gdtot:
         try:
-            msg = sendMessage(f"Processing: <code>{link}</code>", bot, message)
+            msg = sendMessage(f"❖ Processing: <code>{link}</code>", bot, message)
             link = gdtot(link)
             deleteMessage(bot, msg)
         except DirectDownloadLinkException as e:
@@ -57,7 +57,7 @@ def _clone(message, bot, multi=0):
                 msg3 = "File/Folder is already available in Drive.\nHere are the search results:"
                 return sendMarkup(msg3, bot, message, button)
         if CLONE_LIMIT is not None:
-            LOGGER.info('Checking File/Folder Size...')
+            LOGGER.info('❖ Checking File/Folder Size...')
             if size > CLONE_LIMIT * 1024**3:
                 msg2 = f'Failed, Clone limit is {CLONE_LIMIT}GB.\nYour File/Folder size is {get_readable_file_size(size)}.'
                 return sendMessage(msg2, bot, message)
@@ -69,7 +69,7 @@ def _clone(message, bot, multi=0):
             sleep(1)
             Thread(target=_clone, args=(nextmsg, bot, multi)).start()
         if files <= 20:
-            msg = sendMessage(f"Cloning: <code>{link}</code>", bot, message)
+            msg = sendMessage(f"❖ Cloning: <code>{link}</code>", bot, message)
             result, button = gd.clone(link)
             deleteMessage(bot, msg)
         else:
@@ -92,7 +92,7 @@ def _clone(message, bot, multi=0):
                     update_all_messages()
             except IndexError:
                 pass
-        cc = f'\n\n<b>cc: </b>{tag}'
+        cc = f'\n\n<b>❖ By: </b>{tag}'
         if button in ["cancelled", ""]:
             sendMessage(f"{tag} {result}", bot, message)
         else:
