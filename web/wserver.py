@@ -754,7 +754,7 @@ def set_priority(hash_id):
 
 @app.route('/')
 def homepage():
-    return "<h1>24/7 Mirror Channel<a href='https://t.me/mirror_247_chennel'>@GitHub</a> By <a href='https://t.me/mirror_247_chennel'>247</a></h1>"
+    return "<h1>Hey, There What's up?<a href='https://github.com/professorop/247-Mirror-Bot'>@GitHub_Repo</a> By <a href='https://t.me/mirror_247_chennel'>247</a></h1>"
 
 @app.errorhandler(NotFound404Error)
 def page_not_found(e):
