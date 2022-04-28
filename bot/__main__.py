@@ -43,7 +43,7 @@ def stats(update, context):
     mem_t = get_readable_file_size(memory.total)
     mem_a = get_readable_file_size(memory.available)
     mem_u = get_readable_file_size(memory.used)
-    stats = f'<b>❖ 𝟮𝟰/𝟳 𝗠𝗶𝗿𝗿𝗼𝗿 𝗕𝗼𝘁 ❖</b>\n\n'\ 
+    stats = f'<b>❖ 𝟮𝟰/𝟳 𝗠𝗶𝗿𝗿𝗼𝗿 𝗕𝗼𝘁 ❖</b>\n\n'\
             f'<b>❖ Last Changes:</b> {last_commit}\n\n'\
             f'<b>❖ Bot Started Since:</b> {currentTime}\n'\
             f'<b>❖ OS Uptime:</b> {osUptime}\n\n'\
@@ -280,3 +280,4 @@ def main():
 app.start()
 main()
 idle()
+
