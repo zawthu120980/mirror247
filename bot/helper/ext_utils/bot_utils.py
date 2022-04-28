@@ -115,7 +115,7 @@ def get_progress_bar_string(status):
     if cPart >= 0:
         p_str += PROGRESS_INCOMPLETE[cPart]
     p_str += ' ' * (PROGRESS_MAX_SIZE - cFull)
-    p_str = f"[{p_str}]"
+    p_str = f"{p_str}"
     return p_str
 
 def get_readable_message():
@@ -155,7 +155,8 @@ def get_readable_message():
                            f" | <b>Leechers:</b> {download.torrent_info().num_leechs}"
                 except:
                     pass
-                msg += f"\n<code>/{BotCommands.CancelMirror} {download.gid()}</code>"
+                msg += f"\n<b>❖ User:</b> <code>/{BotCommands.InfoCommand}{download.message.from_user.id}</code>"
+                msg += f"\n<b>❖ To Stop:</b> <code>/{BotCommands.CancelMirror} {download.gid()}</code>"
             elif download.status() == MirrorStatus.STATUS_SEEDING:
                 msg += f"\n<b>❖ Size: </b>{download.size()}"
                 msg += f"\n<b>❖ Speed: </b>{get_readable_file_size(download.torrent_info().upspeed)}/s"
@@ -277,4 +278,6 @@ def get_content_type(link: str) -> str:
         except:
             content_type = None
     return content_type
+
+
 
