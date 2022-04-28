@@ -86,7 +86,7 @@ def torserbut(update, context):
     data = query.data
     data = data.split(" ")
     if user_id != int(data[1]):
-        query.answer(text="Not Yours!", show_alert=True)
+        query.answer(text=" Not Yours! ", show_alert=True)
     elif data[2].startswith('api'):
         query.answer()
         button = _api_buttons(user_id, data[2])
@@ -138,17 +138,16 @@ def _search(key, site, message, method):
         try:
             resp = rget(api)
             search_results = resp.json()
-            if "error" not in search_results.keys():
-                msg = f"<b>Found {min(search_results['total'], TELEGRAPH_LIMIT)}</b>"
-                if method == 'apitrend':
-                    msg += f" <b>trending result(s)\nTorrent Site:- <i>{SITES.get(site)}</i></b>"
-                elif method == 'apirecent':
-                    msg += f" <b>recent result(s)\nTorrent Site:- <i>{SITES.get(site)}</i></b>"
-                else:
-                    msg += f" <b>result(s) for <i>{key}</i>\nTorrent Site:- <i>{SITES.get(site)}</i></b>"
-                search_results = search_results['data']
-            else:
+            if "error" in search_results.keys():
                 return editMessage(f"No result found for <i>{key}</i>\nTorrent Site:- <i>{SITES.get(site)}</i>", message)
+            msg = f"<b>Found {min(search_results['total'], TELEGRAPH_LIMIT)}</b>"
+            if method == 'apitrend':
+                msg += f" <b>trending result(s)\nTorrent Site:- <i>{SITES.get(site)}</i></b>"
+            elif method == 'apirecent':
+                msg += f" <b>recent result(s)\nTorrent Site:- <i>{SITES.get(site)}</i></b>"
+            else:
+                msg += f" <b>result(s) for <i>{key}</i>\nTorrent Site:- <i>{SITES.get(site)}</i></b>"
+            search_results = search_results['data']
         except Exception as e:
             return editMessage(str(e), message)
     else:
@@ -164,11 +163,10 @@ def _search(key, site, message, method):
         dict_search_results = client.search_results(search_id=search_id)
         search_results = dict_search_results.results
         total_results = dict_search_results.total
-        if total_results != 0:
-            msg = f"<b>Found {min(total_results, TELEGRAPH_LIMIT)}</b>"
-            msg += f" <b>result(s) for <i>{key}</i>\nTorrent Site:- <i>{site.capitalize()}</i></b>"
-        else:
+        if total_results == 0:
             return editMessage(f"No result found for <i>{key}</i>\nTorrent Site:- <i>{site.capitalize()}</i>", message)
+        msg = f"<b>Found {min(total_results, TELEGRAPH_LIMIT)}</b>"
+        msg += f" <b>result(s) for <i>{key}</i>\nTorrent Site:- <i>{site.capitalize()}</i></b>"
     link = _getResult(search_results, key, message, method)
     buttons = button_build.ButtonMaker()
     buttons.buildbutton("🔎 VIEW", link)
@@ -179,20 +177,18 @@ def _search(key, site, message, method):
 
 def _getResult(search_results, key, message, method):
     telegraph_content = []
-    if method == 'apisearch':
+    if method == 'apirecent':
+        msg = "<h4>API Recent Results</h4>"
+    elif method == 'apisearch':
         msg = f"<h4>API Search Result(s) For {key}</h4>"
     elif method == 'apitrend':
-        msg = f"<h4>API Trending Results</h4>"
-    elif method == 'apirecent':
-        msg = f"<h4>API Recent Results</h4>"
+        msg = "<h4>API Trending Results</h4>"
     else:
         msg = f"<h4>PLUGINS Search Result(s) For {key}</h4>"
     for index, result in enumerate(search_results, start=1):
         if method.startswith('api'):
             if 'name' in result.keys():
                 msg += f"<code><a href='{result['url']}'>{escape(result['name'])}</a></code><br>"
-            elif 'title' in result.keys():
-                msg += f"<code><a href='{result['url']}'>{escape(result['title'])}</a></code><br>"
             if 'torrents' in result.keys():
                 for subres in result['torrents']:
                     msg += f"<b>Quality: </b>{subres['quality']} | <b>Type: </b>{subres['type']} | <b>Size: </b>{subres['size']}<br>"
@@ -233,7 +229,7 @@ def _getResult(search_results, key, message, method):
 
     editMessage(f"<b>Creating</b> {len(telegraph_content)} <b>Telegraph pages.</b>", message)
     path = [telegraph.create_page(
-                title='24/7 Mirror Torrent Search',
+                title='24/7 Mirror Bot Torrent Search',
                 content=content
             )["path"] for content in telegraph_content]
     sleep(0.5)
@@ -247,8 +243,7 @@ def _api_buttons(user_id, method):
     for data, name in SITES.items():
         buttons.sbutton(name, f"torser {user_id} {data} {method}")
     buttons.sbutton("Cancel", f"torser {user_id} cancel")
-    button = InlineKeyboardMarkup(buttons.build_menu(2))
-    return button
+    return InlineKeyboardMarkup(buttons.build_menu(2))
 
 def _plugin_buttons(user_id):
     buttons = button_build.ButtonMaker()
@@ -262,8 +257,7 @@ def _plugin_buttons(user_id):
         buttons.sbutton(siteName.capitalize(), f"torser {user_id} {siteName} plugin")
     buttons.sbutton('All', f"torser {user_id} all plugin")
     buttons.sbutton("Cancel", f"torser {user_id} cancel")
-    button = InlineKeyboardMarkup(buttons.build_menu(2))
-    return button
+    return InlineKeyboardMarkup(buttons.build_menu(2))
 
 
 torser_handler = CommandHandler(BotCommands.SearchCommand, torser, filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
