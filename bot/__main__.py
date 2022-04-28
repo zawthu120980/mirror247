@@ -43,23 +43,23 @@ def stats(update, context):
     mem_t = get_readable_file_size(memory.total)
     mem_a = get_readable_file_size(memory.available)
     mem_u = get_readable_file_size(memory.used)
-    stats = f'<b>❖ 𝟮𝟰/𝟳 𝗠𝗶𝗿𝗿𝗼𝗿 𝗕𝗼𝘁 ❖</b>\n\n'\
-            f'<b>Last Changes:</b> {last_commit}\n\n'\
-            f'<b>Bot Started Since:</b> {currentTime}\n'\
-            f'<b>OS Startup Since:</b> {osUptime}\n\n'\
-            f'<b>Total Disk Space:</b> {total}\n'\
-            f'<b>Used:</b> {used} | <b>Free:</b> {free}\n\n'\
-            f'<b>Upload Speed ⚡:</b> {sent}\n'\
-            f'<b>Download Speed ⚡:</b> {recv}\n\n'\
-            f'<b>CPU:</b> {cpuUsage}%\n'\
-            f'<b>RAM:</b> {mem_p}%\n'\
-            f'<b>DISK:</b> {disk}%\n\n'\
-            f'<b>Physical Cores:</b> {p_core}\n'\
-            f'<b>Total Cores:</b> {t_core}\n\n'\
-            f'<b>SWAP:</b> {swap_t} | <b>Used:</b> {swap_p}%\n'\
-            f'<b>Memory Total:</b> {mem_t}\n'\
-            f'<b>Memory Free:</b> {mem_a}\n'\
-            f'<b>Memory Used:</b> {mem_u}\n'
+    stats = f'<b>❖ 𝟮𝟰/𝟳 𝗠𝗶𝗿𝗿𝗼𝗿 𝗕𝗼𝘁 ❖</b>\n\n'\ 
+            f'<b>❖ Last Changes:</b> {last_commit}\n\n'\
+            f'<b>❖ Bot Started Since:</b> {currentTime}\n'\
+            f'<b>❖ OS Uptime:</b> {osUptime}\n\n'\
+            f'<b>❖ Total Disk Space:</b> {total}\n'\
+            f'<b>❖ Used:</b> {used} | <b>Free:</b> {free}\n\n'\
+            f'<b>❖ Upload:</b> {sent}\n'\
+            f'<b>❖ Download:</b> {recv}\n\n'\
+            f'<b>❖ CPU:</b> {cpuUsage}%\n'\
+            f'<b>❖ RAM:</b> {mem_p}%\n'\
+            f'<b>❖ DISK:</b> {disk}%\n\n'\
+            f'<b>❖ Physical Cores:</b> {p_core}\n'\
+            f'<b>❖ Total Cores:</b> {t_core}\n\n'\
+            f'<b>❖ SWAP:</b> {swap_t} | <b>Used:</b> {swap_p}%\n'\
+            f'<b>❖ Memory Total:</b> {mem_t}\n'\
+            f'<b>❖ Memory Free:</b> {mem_a}\n'\
+            f'<b>❖ Memory Used:</b> {mem_u}\n'
     sendMessage(stats, context.bot, update.message)
 
 
@@ -67,7 +67,8 @@ def start(update, context):
     buttons = ButtonMaker()
     buttons.buildbutton("Group", "https://t.me/+1ivP1aO-bRo0Yzg1")
     buttons.buildbutton("Channel", "https://t.me/mirror_247_chennel")
-    reply_markup = InlineKeyboardMarkup(buttons.build_menu(2))
+    buttons.buildbutton("Maintainer", "https://t.me/rk_shaju")
+    reply_markup = InlineKeyboardMarkup(buttons.build_menu(3))
     if CustomFilters.authorized_user(update) or CustomFilters.authorized_chat(update):
         start_string = f'''
 This bot can mirror all your links to Google Drive!
@@ -75,16 +76,15 @@ Type /{BotCommands.HelpCommand} to get a list of available commands
 '''
         sendMarkup(start_string, context.bot, update.message, reply_markup)
     else:
-        sendMarkup('Why you knock me? If you want to mirror files join below 👇', context.bot, update.message, reply_markup)
+        sendMarkup('Not Authorized user,\nJoin Below 👇', context.bot, update.message, reply_markup)
 
 def restart(update, context):
     restart_message = sendMessage("Restarting...", context.bot, update.message)
     if Interval:
         Interval[0].cancel()
     alive.kill()
-    srun(["pkill", "-f", "gunicorn"])
     clean_all()
-    srun(["pkill", "-f", "aria2c"])
+    srun(["pkill", "-9", "-f", "gunicorn|aria2c|qbittorrent-nox|megasdkrest"])
     srun(["python3", "update.py"])
     with open(".restartmsg", "w") as f:
         f.truncate(0)
@@ -94,7 +94,7 @@ def restart(update, context):
 
 def ping(update, context):
     start_time = int(round(time() * 1000))
-    reply = sendMessage("Starting Ping", context.bot, update.message)
+    reply = sendMessage("❖ Starting Ping", context.bot, update.message)
     end_time = int(round(time() * 1000))
     editMessage(f'❖ Ping {end_time - start_time} ms', reply)
 
@@ -251,7 +251,7 @@ def main():
         try:
             for i in AUTHORIZED_CHATS:
                 if str(i).startswith('-'):
-                    bot.sendMessage(chat_id=i, text="<b>What's up, Mango Peoples? </b>", parse_mode=ParseMode.HTML)
+                    bot.sendMessage(chat_id=i, text="<b>What's up mango peoples? \nAll Ok? </b>", parse_mode=ParseMode.HTML)
         except Exception as e:
             LOGGER.error(e)
 
@@ -272,7 +272,7 @@ def main():
     dispatcher.add_handler(stats_handler)
     dispatcher.add_handler(log_handler)
     updater.start_polling(drop_pending_updates=IGNORE_PENDING_REQUESTS)
-    LOGGER.info("What's up, Mango Peoples? ")
+    LOGGER.info("What's up mango peoples? \nAll Ok? ")
     signal(SIGINT, exit_clean_up)
     if rss_session is not None:
         rss_session.start()
