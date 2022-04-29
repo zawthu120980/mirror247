@@ -33,7 +33,6 @@ class MirrorStatus:
     STATUS_CHECKING = "CheckingUp...📝"
     STATUS_SEEDING = "Seeding...🌧"
 
-
 SIZE_UNITS = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
 
 
@@ -109,7 +108,7 @@ def get_progress_bar_string(status):
     cFull = p // 8
     p_str = '█' * cFull
     p_str += '▒' * (12 - cFull)
-    p_str = f"<b>Progress: <b/>{p_str}]"
+    p_str = f"<b>Progress: <b/>{p_str}"
     return p_str
 
 def get_readable_message():
@@ -131,7 +130,7 @@ def get_readable_message():
                 MirrorStatus.STATUS_SPLITTING,
                 MirrorStatus.STATUS_SEEDING,
             ]:
-                msg += f"\n{get_progress_bar_string(download)} {download.progress()}"
+                msg += f"\n{get_progress_bar_string(download)} \n{download.progress()}"
                 if download.status() == MirrorStatus.STATUS_CLONING:
                     msg += f"\n<b>❖ Cloned:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
                 elif download.status() == MirrorStatus.STATUS_UPLOADING:
