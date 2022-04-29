@@ -290,6 +290,7 @@ sudo docker-compose start
 
 ```
 mirror - Mirror
+start - Start bot
 zipmirror - Mirror and upload as zip
 unzipmirror - Mirror and extract files
 qbmirror - Mirror torrent using qBittorrent
@@ -307,6 +308,10 @@ watch - Mirror yt-dlp supported link
 zipwatch - Mirror yt-dlp supported link as zip
 leechwatch - Leech through yt-dlp supported link
 leechzipwatch - Leech yt-dlp support link as zip
+addsudo - Add as sudo (Owner)
+rmsudo - Remove sudo (Owner)
+authorize - To Authorised Chat (Owner) 
+unauthorize - To Unauthorise Chat (Owner) 
 leechset - Leech settings
 setthumb - Set thumbnail
 status - Get Mirror Status message
