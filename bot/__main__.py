@@ -5,18 +5,21 @@ from psutil import disk_usage, cpu_percent, swap_memory, cpu_count, virtual_memo
 from time import time
 from pyrogram import idle
 from sys import executable
-from telegram import ParseMode, InlineKeyboardMarkup
+from telegram import InlineKeyboardMarkup
 from telegram.ext import CommandHandler
 
-from bot import bot, app, dispatcher, updater, botStartTime, IGNORE_PENDING_REQUESTS, alive, AUTHORIZED_CHATS, LOGGER, Interval, rss_session
+from bot import bot, app, dispatcher, updater, botStartTime, IGNORE_PENDING_REQUESTS, alive, LOGGER, Interval, rss_session, INCOMPLETE_TASK_NOTIFIER, DB_URI
 from .helper.ext_utils.fs_utils import start_cleanup, clean_all, exit_clean_up
-from .helper.telegram_helper.bot_commands import BotCommands
-from .helper.telegram_helper.message_utils import sendMessage, sendMarkup, editMessage, sendLogFile
 from .helper.ext_utils.telegraph_helper import telegraph
 from .helper.ext_utils.bot_utils import get_readable_file_size, get_readable_time
+from .helper.ext_utils.db_handler import DbManger
+from .helper.telegram_helper.bot_commands import BotCommands
+from .helper.telegram_helper.message_utils import sendMessage, sendMarkup, editMessage, sendLogFile
 from .helper.telegram_helper.filters import CustomFilters
 from .helper.telegram_helper.button_build import ButtonMaker
+
 from .modules import authorize, list, cancel_mirror, mirror_status, mirror, clone, watch, shell, eval, delete, count, leech_settings, search, rss
+
 
 
 def stats(update, context):
@@ -44,7 +47,7 @@ def stats(update, context):
     mem_a = get_readable_file_size(memory.available)
     mem_u = get_readable_file_size(memory.used)
     stats = f'<b>❖ 𝟮𝟰/𝟳 𝗠𝗶𝗿𝗿𝗼𝗿 𝗕𝗼𝘁 ❖</b>\n\n'\
-            f'<b>❖ Last Changes:</b> {last_commit}\n\n'\
+            f'<b>❖ Last Changes Date:</b> {last_commit}\n\n'\
             f'<b>❖ Bot Started Since:</b> {currentTime}\n'\
             f'<b>❖ OS Uptime:</b> {osUptime}\n\n'\
             f'<b>❖ Total Disk Space:</b> {total}\n'\
@@ -59,7 +62,8 @@ def stats(update, context):
             f'<b>❖ SWAP:</b> {swap_t} | <b>Used:</b> {swap_p}%\n'\
             f'<b>❖ Memory Total:</b> {mem_t}\n'\
             f'<b>❖ Memory Free:</b> {mem_a}\n'\
-            f'<b>❖ Memory Used:</b> {mem_u}\n'
+            f'<b>❖ Memory Used:</b> {mem_u}\n\n'\
+            f'<b>❖ Join Us @mirror_247_chennel ❖</b>\n'
     sendMessage(stats, context.bot, update.message)
 
 
@@ -76,7 +80,7 @@ Type /{BotCommands.HelpCommand} to get a list of available commands
 '''
         sendMarkup(start_string, context.bot, update.message, reply_markup)
     else:
-        sendMarkup('Not Authorized user,\nJoin Below 👇', context.bot, update.message, reply_markup)
+        sendMarkup('Access Denied,\nIf you want to mirror files, Join below 👇', context.bot, update.message, reply_markup)
 
 def restart(update, context):
     restart_message = sendMessage("Restarting...", context.bot, update.message)
@@ -84,7 +88,7 @@ def restart(update, context):
         Interval[0].cancel()
     alive.kill()
     clean_all()
-    srun(["pkill", "-9", "-f", "gunicorn|aria2c|qbittorrent-nox|megasdkrest"])
+    srun(["pkill", "-f", "gunicorn|aria2c|qbittorrent-nox|megasdkrest"])
     srun(["python3", "update.py"])
     with open(".restartmsg", "w") as f:
         f.truncate(0)
@@ -241,19 +245,42 @@ botcmds = [
 def main():
     # bot.set_my_commands(botcmds)
     start_cleanup()
-    # Check if the bot is restarting
+    if INCOMPLETE_TASK_NOTIFIER and DB_URI is not None:
+        notifier_dict = DbManger().get_incomplete_tasks()
+        if notifier_dict:
+            for cid, data in notifier_dict.items():
+                if bot.get_chat(cid).type in ['private', 'group']:
+                    continue
+                if ospath.isfile(".restartmsg"):
+                    with open(".restartmsg") as f:
+                        chat_id, msg_id = map(int, f)
+                    msg = 'Restarted successfully!'
+                else:
+                    msg = '❖ Join Us @mirror_247_chennel ❖'
+                for tag, mids in data.items():
+                     msg += f"\n\n{tag}: "
+                     for index, mid in enumerate(mids, start=1):
+                         link = f"https://t.me/c/{str(cid)[4:]}/{mid}"
+                         msg += f" <a href='{link}'>{index}</a> |"
+                         if len(msg.encode('utf-8')) > 4000:
+                             if 'Restarted successfully!' in msg and cid == chat_id:
+                                 bot.editMessageText(msg, chat_id, msg_id, parse_mode='HTMl')
+                                 osremove(".restartmsg")
+                             else:
+                                 bot.sendMessage(cid, msg, 'HTML')
+                             msg = ''
+                if 'Restarted successfully!' in msg and cid == chat_id:
+                     bot.editMessageText(msg, chat_id, msg_id, parse_mode='HTMl')
+                     osremove(".restartmsg")
+                else:
+                    bot.sendMessage(cid, msg, 'HTML')
+        DbManger().trunc_table('notifier')
+
     if ospath.isfile(".restartmsg"):
         with open(".restartmsg") as f:
             chat_id, msg_id = map(int, f)
         bot.edit_message_text("Restarted successfully!", chat_id, msg_id)
         osremove(".restartmsg")
-    elif AUTHORIZED_CHATS:
-        try:
-            for i in AUTHORIZED_CHATS:
-                if str(i).startswith('-'):
-                    bot.sendMessage(chat_id=i, text="<b>What's up mango peoples? \nAll Ok? </b>", parse_mode=ParseMode.HTML)
-        except Exception as e:
-            LOGGER.error(e)
 
     start_handler = CommandHandler(BotCommands.StartCommand, start, run_async=True)
     ping_handler = CommandHandler(BotCommands.PingCommand, ping,
@@ -272,7 +299,7 @@ def main():
     dispatcher.add_handler(stats_handler)
     dispatcher.add_handler(log_handler)
     updater.start_polling(drop_pending_updates=IGNORE_PENDING_REQUESTS)
-    LOGGER.info("What's up mango peoples? \nAll Ok? ")
+    LOGGER.info("❖ Join Us @mirror_247_chennel ❖")
     signal(SIGINT, exit_clean_up)
     if rss_session is not None:
         rss_session.start()
@@ -280,4 +307,3 @@ def main():
 app.start()
 main()
 idle()
-
