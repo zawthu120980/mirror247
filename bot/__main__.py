@@ -246,7 +246,7 @@ def main():
     # bot.set_my_commands(botcmds)
     start_cleanup()
     if INCOMPLETE_TASK_NOTIFIER and DB_URI is not None:
-        notifier_dict = DbManager().get_incomplete_tasks()
+        notifier_dict = DbManger().get_incomplete_tasks()
         if notifier_dict:
             for cid, data in notifier_dict.items():
                 if bot.get_chat(cid).type in ['private', 'group']:
